@@ -1,0 +1,37 @@
+#!/bin/sh
+
+PREREQ="dropbear"
+
+prereqs() {
+    echo "$PREREQ"
+}
+
+case "$1" in
+    prereqs)
+        prereqs
+        exit 0
+    ;;
+esac
+
+TELEGRAM_BOT_TOKEN="<token>"
+CHAT_ID="<chat_id>"
+
+run_telegramip() {
+echo TELEGRAMIP is configuring network
+configure_networking
+echo TELEGRAMIP is sleeping 20 sec
+sleep 20
+# Asking two services in case one of them fails
+CURR_IP=$(curl ifconfig.me)
+CURR_IP2=$(curl ipinfo.io/ip)
+
+echo "IP is $CURR_IP or $CURR_IP2"
+
+curl -X POST \
+     -H 'Content-Type: application/json' \
+     -d "{\"chat_id\": \"$CHAT_ID\", \"text\": \"Workstation restarted, current IP is $CURR_IP; $CURR_IP2\", \"disable_notification\": true}" \
+     https://api.telegram.org/bot$TELEGRAM_BOT_TOKEN/sendMessage
+}
+
+run_telegramip &
+#echo $! >/run/telegramip.pid
